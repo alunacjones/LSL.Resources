@@ -11,6 +11,7 @@ The main helper methods cover:
 * Obtaining a `Stream` for a matched resource.
 * Reading string content for a matched resource.
 * Reading a matched resource as `JSON`.
+    * These methods use the full type name to match a resource (with the extension `json`)
 
 <!-- HIDE -->
 ## Further Documentation
