@@ -2,6 +2,9 @@
 
 Sometimes we may have a class that needs custom serialization settings e.g. the use of a `JsonStringEnumConverter`. The following example needs to use that to get a string value for an enum value to be deserialized.
 
+!!! note
+    The resource used in this example can be found [here](https://github.com/alunacjones/LSL.Resources.DotNetFiddle/blob/master/src/LSL.Resources.DotNetFiddle/Resources/LSL.Resources.DotNetFiddle.JsonTestClassWithEnum.json){ target="_blank" }
+
 ```csharp  { data-fiddle="rCtPvl" }
 var theObject = ResourceHelper
     .ReadJsonResource<JsonTestClassWithEnum>(c => c
