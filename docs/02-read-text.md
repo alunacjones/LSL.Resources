@@ -1,0 +1,11 @@
+# Reading a string resource
+
+The following example shows us reading the text content of a resource:
+
+```csharp
+var content = typeof(JsonTestClass)
+    .Assembly
+    .ReadStringResource("text-file.txt");
+
+// content will be "Text file"
+```
