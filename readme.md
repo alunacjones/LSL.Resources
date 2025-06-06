@@ -4,10 +4,17 @@
 
 # LSL.Resources
 
-Provide package documentation here.
+A library to ease the pain of reading resources from an assembly. All helper methods use `string.EndsWith` to ease the pain of searching for resources.
+
+The main helper methods cover:
+
+* Obtaining a `Stream` for a matched resource.
+* Reading string content for a matched resource.
+* Reading a matched resource as `JSON`.
 
 <!-- HIDE -->
 ## Further Documentation
 
 More in-depth documentation can be found [here](https://alunacjones.github.io/LSL.Resources/)
 <!-- END:HIDE -->
+
