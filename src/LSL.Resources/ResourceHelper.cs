@@ -26,8 +26,9 @@ public static class ResourceHelper
     {
         var names = assembly.AssertNotNull(nameof(assembly)).GetManifestResourceNames();
         resourceNameEndsWith.AssertNotNull(nameof(resourceNameEndsWith));
-        
+
         var resourceName = names
+            .OrderBy(name => name)
             .Where(name => name.EndsWith(resourceNameEndsWith))
             .FirstOrDefault()
             ?? throw new FileNotFoundException(
@@ -93,10 +94,12 @@ public static class ResourceHelper
 
         var options = new JsonSerializerOptions();
         settings.OptionsConfigurator.Invoke(options);
-        var name = settings.ResourceNameEndsWith ?? $"{type.FullName}.json";
+        var name = settings.ResourceNameEndsWith ?? $".{type.FullName}.json";
         var prefix = settings.ResourceNamePrefix == null
             ? null
-            : $".{settings.ResourceNamePrefix}.";
+            : name.StartsWith(".")
+                ? settings.ResourceNamePrefix
+                : $".{settings.ResourceNamePrefix}";
 
         return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{prefix}{name}"), type, options);
     }
