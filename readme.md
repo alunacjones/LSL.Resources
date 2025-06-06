@@ -11,11 +11,42 @@ The main helper methods cover:
 * Obtaining a `Stream` for a matched resource.
 * Reading string content for a matched resource.
 * Reading a matched resource as `JSON`.
-    * These methods use the full type name to match a resource (with the extension `json`)
+    * These methods use the full type name to match a resource name (with the extension `.json`)
+    * [System.Text.Json][1] is used for deserialization
 
 <!-- HIDE -->
 ## Further Documentation
 
 More in-depth documentation can be found [here](https://alunacjones.github.io/LSL.Resources/)
-<!-- END:HIDE -->
 
+## Pre-amble on the following examples
+
+THe following examples assume that the assembly that contains `JsonTestClass` contains all the named
+resources used. The assembly name is assumed to be `MyResources`
+
+## Reading Text Content
+
+The following example shows us reading a string resource file:
+
+```csharp
+var content = typeof(JsonTestClass)
+    .Assembly
+    .ReadStringResource("text-file.txt");
+
+// content will contain the contents of the embedded
+// resource whose name ends with "text-file.txt"
+```
+
+## Reading JSON Content
+
+The following example shows us reading a `JSON` string resource file into an object:
+
+```csharp
+var theObject = ResourceHelper
+    .ReadJsonResource<T>();
+
+// theObject will contain the deserialized JSON content
+// of the resource whose name ends with `MyResources.JsonTestClass.json`
+```
+<!-- END:HIDE -->
+[1]: https://www.nuget.org/packages/system.text.json/

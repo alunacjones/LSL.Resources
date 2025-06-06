@@ -18,21 +18,24 @@ public static class ResourceHelper
     /// It matches the first resource whose name
     /// ends with <paramref name="resourceNameEndsWith"/>
     /// </summary>
-    /// <param name="source"></param>
+    /// <param name="assembly"></param>
     /// <param name="resourceNameEndsWith"></param>
     /// <returns></returns>
     /// <exception cref="FileNotFoundException"></exception>
-    public static Stream GetResourceStream(this Assembly source, string resourceNameEndsWith)
+    public static Stream GetResourceStream(this Assembly assembly, string resourceNameEndsWith)
     {
-        var resourceName = source.AssertNotNull(nameof(source)).GetManifestResourceNames()
+        var names = assembly.AssertNotNull(nameof(assembly)).GetManifestResourceNames();
+        resourceNameEndsWith.AssertNotNull(nameof(resourceNameEndsWith));
+        
+        var resourceName = names
             .Where(name => name.EndsWith(resourceNameEndsWith))
             .FirstOrDefault()
             ?? throw new FileNotFoundException(
-                    $"Could not locate a resource whose name ends with '{resourceNameEndsWith}' from assembly '{source.FullName}'.",
+                    $"Could not locate a resource whose name ends with '{resourceNameEndsWith}' from assembly '{assembly.FullName}'.",
                     resourceNameEndsWith
                 );
 
-        return source.GetManifestResourceStream(resourceName);
+        return assembly.GetManifestResourceStream(resourceName);
     }
 
     /// <summary>
@@ -90,7 +93,11 @@ public static class ResourceHelper
 
         var options = new JsonSerializerOptions();
         settings.OptionsConfigurator.Invoke(options);
+        var name = settings.ResourceNameEndsWith ?? $"{type.FullName}.json";
+        var prefix = settings.ResourceNamePrefix == null
+            ? null
+            : $".{settings.ResourceNamePrefix}.";
 
-        return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{type.FullName}.json"), type, options);
+        return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{prefix}{name}"), type, options);
     }
 }

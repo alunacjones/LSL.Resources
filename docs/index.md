@@ -11,7 +11,8 @@ The main helper methods cover:
 * Obtaining a `Stream` for a matched resource.
 * Reading string content for a matched resource.
 * Reading a matched resource as `JSON`.
-    * These methods use the full type name to match a resource (with the extension `json`)
+    * These methods use the full type name to match a resource name (with the extension `.json`)
+    * [System.Text.Json][1] is used for deserialization
 
 
-
+[1]: https://www.nuget.org/packages/system.text.json/
