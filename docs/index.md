@@ -6,6 +6,8 @@
 
 A library to ease the pain of reading resources from an assembly. All helper methods use `string.EndsWith` to ease the pain of searching for resources.
 
+>**NOTE**: When searching for a resource they are ordered in full name order and the first matching resource is selected.
+
 The main helper methods cover:
 
 * Obtaining a `Stream` for a matched resource.
