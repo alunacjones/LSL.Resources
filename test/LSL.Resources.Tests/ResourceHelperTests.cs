@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 
 namespace LSL.Resources.Tests;
@@ -10,7 +11,9 @@ public class ResourceHelperTests
     public void ReadJsonResource_GivenAValidResource_ItShouldReturnTheExpectedResult()
     {
         ResourceHelper
-            .ReadJsonResource<JsonTestClass>(c => c.FromAssemblyOfType<JsonTestClass>())
+            .ReadJsonResource<JsonTestClass>(c => c
+                .FromAssemblyOfType<JsonTestClass>()
+                .ConfigureJsonDeserializerOptions(c => c.Converters.Add(new JsonStringEnumConverter())))
             .Should()
             .BeEquivalentTo(new JsonTestClass
             {

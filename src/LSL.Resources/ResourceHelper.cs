@@ -88,6 +88,9 @@ public static class ResourceHelper
 
         configurator?.Invoke(settings);
 
-        return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{type.FullName}.json"), type);
+        var options = new JsonSerializerOptions();
+        settings.OptionsConfigurator.Invoke(options);
+
+        return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{type.FullName}.json"), type, options);
     }
 }
