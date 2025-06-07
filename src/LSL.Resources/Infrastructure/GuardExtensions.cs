@@ -7,7 +7,14 @@ namespace LSL.Resources.Infrastructure;
 /// </summary>
 internal static class GuardExtensions
 {
+    private const string _baseError = "Argument cannot be null";
+
     public static T AssertNotNull<T>(
         this T value,
-        string parameterName) => value ?? throw new ArgumentNullException(parameterName, "Argument cannot be null");
+        string parameterName,
+        string extraInformation = null) => value ?? throw new ArgumentNullException(
+            parameterName,
+            extraInformation == null
+                ? _baseError
+                : $"{_baseError}. {extraInformation}");
 }

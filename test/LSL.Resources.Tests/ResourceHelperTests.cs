@@ -67,7 +67,7 @@ public class ResourceHelperTests
             .Should()
             .ThrowExactly<ArgumentNullException>()
             .WithMessage("Argument cannot be null (Parameter 'type')");
-    }    
+    }
 
     [Test]
     public void ReadJsonResourceWithNameOverride_GivenAValidResource_ItShouldReturnTheExpectedResult()
@@ -117,6 +117,56 @@ public class ResourceHelperTests
                 Name = "AlsLower",
                 Age = -25
             });
+    }
+
+    [Test]
+    public void JsonReaderPrefixOverrideAtTheReadCall_GivenAValidResource_ItShouldReturnTheExpectedResult()
+    {
+        ResourceHelper
+            .BuildJsonReader(c => c
+                .FromAssemblyOfType<ResourceHelperTests>()
+                .ConfigureJsonDeserializerOptions(c => c.PropertyNameCaseInsensitive = true)
+            )
+            .ReadJsonResource<JsonTestClass>(c => c
+                .WithResourceNamePrefixOf("CaseInsensitive"))
+            .Should()
+            .BeEquivalentTo(new JsonTestClass
+            {
+                Name = "AlsLower",
+                Age = -25
+            });
+    }
+
+    [Test]
+    public void JsonReaderResourceNameOverrideAtTheReadCall_GivenAValidResource_ItShouldReturnTheExpectedResult()
+    {
+        ResourceHelper
+            .BuildJsonReader(c => c
+                .FromAssemblyOfType<JsonTestClass>()
+                .ConfigureJsonDeserializerOptions(c => c.PropertyNameCaseInsensitive = true)
+            )
+            .ReadJsonResource<JsonTestClass>(c => c
+                .MatchingResourceEndsWith("other.json"))
+            .Should()
+            .BeEquivalentTo(new JsonTestClass
+            {
+                Name = "Als2",
+                Age = 13
+            });
+    }
+
+    [Test]
+    public void JsonReaderResourceNameOverrideAtTheReadCallWithNoAssemblySetup_GivenAValidResource_ItShouldThrowTheExpectedException()
+    {
+        new Action(() => ResourceHelper
+            .BuildJsonReader(c => c
+                .ConfigureJsonDeserializerOptions(c => c.PropertyNameCaseInsensitive = true)
+            )
+            .ReadJsonResource<JsonTestClass>(c => c
+                .MatchingResourceEndsWith("other.json")))
+            .Should()
+            .ThrowExactly<ArgumentNullException>()
+            .WithMessage("Argument cannot be null. It looks like you haven't setup an Assembly via the FromAssembly or FromAssemblyOfType methods of your configurator (Parameter 'Assembly')");
     }    
 
     [Test]
@@ -167,7 +217,7 @@ public class ResourceHelperTests
             .ThrowExactly<ArgumentNullException>()
             .WithMessage("Argument cannot be null (Parameter 'resourceNameEndsWith')");
     }
-        
+
     [Test]
     public void ReadStringResource_GivenANullAssembly_ItShouldThrowANullArgumentException()
     {

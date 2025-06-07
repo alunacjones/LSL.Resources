@@ -118,7 +118,9 @@ public static class ResourceHelper
         preConfigurator.Invoke(settings);
         configurator?.Invoke(settings);
 
-        settings.Assembly.AssertNotNull(nameof(settings.Assembly));
+        settings.Assembly.AssertNotNull(
+            nameof(settings.Assembly),
+            "It looks like you haven't setup an Assembly via the FromAssembly or FromAssemblyOfType methods of your configurator");
 
         return settings;
     }

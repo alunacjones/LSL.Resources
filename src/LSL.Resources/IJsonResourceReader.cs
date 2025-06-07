@@ -11,6 +11,7 @@ public interface IJsonResourceReader
     /// Read a JSON resource into an instance of <paramref name="type"/>
     /// </summary>
     /// <param name="type"></param>
+    /// <param name="configurator"></param>
     /// <returns></returns>
-    object ReadJsonResource(Type type);
+    object ReadJsonResource(Type type, Action<JsonResourceReaderSettings> configurator = null);
 }

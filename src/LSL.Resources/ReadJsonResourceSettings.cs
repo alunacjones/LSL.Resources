@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Text.Json;
 using LSL.Resources.Infrastructure;
 
@@ -7,13 +8,40 @@ namespace LSL.Resources;
 /// <summary>
 /// ReadJsonResourceSettings
 /// </summary>
-public sealed class ReadJsonResourceSettings : BaseSettings<ReadJsonResourceSettings>
+public sealed class ReadJsonResourceSettings : BaseReadJsonResourceSettings<ReadJsonResourceSettings>
 {
     internal ReadJsonResourceSettings() => Self = this;
 
-    internal string ResourceNamePrefix { get; private set; }
-    internal string ResourceNameEndsWith { get; private set; }
     internal Action<JsonSerializerOptions> OptionsConfigurator { get; private set; } = _ => { };
+
+    internal Assembly Assembly { get; private set; }
+
+    /// <summary>
+    /// Set the assembly to search for a resource
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <returns></returns>
+    public ReadJsonResourceSettings FromAssembly(Assembly assembly)
+    {
+        Assembly = assembly.AssertNotNull(nameof(assembly));
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the assembly to search for a resource
+    /// to the assembly that contains <paramref name="type"/>
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public ReadJsonResourceSettings FromAssemblyOfType(Type type) => FromAssembly(type.AssertNotNull(nameof(type)).Assembly);
+
+    /// <summary>
+    /// Sets the assembly to search for a resource
+    /// to the assembly that contains <typeparamref name="T"/>
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public ReadJsonResourceSettings FromAssemblyOfType<T>() => FromAssemblyOfType(typeof(T));
 
     /// <summary>
     /// Allows provide a delegate to configure
@@ -28,29 +56,24 @@ public sealed class ReadJsonResourceSettings : BaseSettings<ReadJsonResourceSett
         return this;
     }
 
-    /// <summary>
-    /// Allows for overriding the default
-    /// behaviour of using the type name to
-    /// match the resource name
-    /// </summary>
-    /// <param name="resourceNameEndsWith"></param>
-    /// <returns></returns>
-    public ReadJsonResourceSettings MatchingResourceEndsWith(string resourceNameEndsWith)
+    internal ReadJsonResourceSettings CloneWith(IBaseReadJsonResourceSettings baseReadJsonResourceSettings)
     {
-        ResourceNameEndsWith = resourceNameEndsWith.AssertNotNull(nameof(resourceNameEndsWith));
-        return this;
-    }
+        var result = new ReadJsonResourceSettings()
+        {
+            Assembly = Assembly,
+            OptionsConfigurator = OptionsConfigurator,
+        };
 
-    /// <summary>
-    /// Allows for prefixing of the partial resource
-    /// name so allow for sub folders but still
-    /// allow the full type name to be utilised in the name
-    /// </summary>
-    /// <param name="resourceNamePrefix"></param>
-    /// <returns></returns>
-    public ReadJsonResourceSettings WithResourceNamePrefixOf(string resourceNamePrefix)
-    {
-        ResourceNamePrefix = resourceNamePrefix.AssertNotNull(nameof(resourceNamePrefix));
-        return this;
+        if (baseReadJsonResourceSettings.ResourceNameEndsWith is not null)
+        {
+            result.MatchingResourceEndsWith(baseReadJsonResourceSettings.ResourceNameEndsWith);
+        }
+
+        if (baseReadJsonResourceSettings.ResourceNamePrefix is not null)
+        {
+            result.WithResourceNamePrefixOf(baseReadJsonResourceSettings.ResourceNamePrefix);
+        }
+
+        return result;
     }
 }
