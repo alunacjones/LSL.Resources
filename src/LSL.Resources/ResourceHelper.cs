@@ -85,22 +85,41 @@ public static class ResourceHelper
     /// <param name="type"></param>
     /// <param name="configurator"></param>
     /// <returns></returns>
-    public static object ReadJsonResource(Type type, Action<ReadJsonResourceSettings> configurator = null)
+    public static object ReadJsonResource(Type type, Action<ReadJsonResourceSettings> configurator = null) =>
+        InternalReadJsonResource(
+            type.AssertNotNull(nameof(type)),
+            InitialiseJsonSettings(configurator, c => c.FromAssemblyOfType(type)));
+
+    /// <summary>
+    /// Creates a reusable JSON reader using the provided configuration
+    /// </summary>
+    /// <param name="configurator"></param>
+    /// <returns></returns>
+    public static IJsonResourceReader BuildJsonReader(Action<ReadJsonResourceSettings> configurator = null) =>
+        new JsonResourceReader(InitialiseJsonSettings(configurator, static _ => { }));
+
+    internal static object InternalReadJsonResource(Type type, ReadJsonResourceSettings settings)
     {
-        var settings = new ReadJsonResourceSettings();
-        settings.FromAssembly(type.Assembly);
-
-        configurator?.Invoke(settings);
-
         var options = new JsonSerializerOptions();
         settings.OptionsConfigurator.Invoke(options);
         var name = settings.ResourceNameEndsWith ?? $".{type.FullName}.json";
         var prefix = settings.ResourceNamePrefix == null
             ? null
             : name.StartsWith(".")
-                ? settings.ResourceNamePrefix
-                : $".{settings.ResourceNamePrefix}";
+                ? $".{settings.ResourceNamePrefix}"
+                : $".{settings.ResourceNamePrefix}.";
 
         return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{prefix}{name}"), type, options);
+    }
+
+    internal static ReadJsonResourceSettings InitialiseJsonSettings(Action<ReadJsonResourceSettings> configurator, Action<ReadJsonResourceSettings> preConfigurator)
+    {
+        var settings = new ReadJsonResourceSettings();
+        preConfigurator.Invoke(settings);
+        configurator?.Invoke(settings);
+
+        settings.Assembly.AssertNotNull(nameof(settings.Assembly));
+
+        return settings;
     }
 }

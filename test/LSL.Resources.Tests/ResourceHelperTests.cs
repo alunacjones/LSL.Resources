@@ -102,6 +102,24 @@ public class ResourceHelperTests
     }
 
     [Test]
+    public void JsonReaderPrefixOverride_GivenAValidResource_ItShouldReturnTheExpectedResult()
+    {
+        ResourceHelper
+            .BuildJsonReader(c => c
+                .FromAssemblyOfType<ResourceHelperTests>()
+                .WithResourceNamePrefixOf("CaseInsensitive")
+                .ConfigureJsonDeserializerOptions(c => c.PropertyNameCaseInsensitive = true)
+            )
+            .ReadJsonResource<JsonTestClass>()
+            .Should()
+            .BeEquivalentTo(new JsonTestClass
+            {
+                Name = "AlsLower",
+                Age = -25
+            });
+    }    
+
+    [Test]
     public void ReadJsonResourceWithEnum_GivenAValidResource_ItShouldReturnTheExpectedResult()
     {
         ResourceHelper
