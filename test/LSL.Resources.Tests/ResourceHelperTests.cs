@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -152,6 +153,24 @@ public class ResourceHelperTests
             {
                 Name = "Als2",
                 Age = 13
+            });
+    }
+
+    [Test]
+    public void JsonReaderResourceNameOverrideAtTheReadCallAndADictionaryType_GivenAValidResource_ItShouldReturnTheExpectedResult()
+    {
+        ResourceHelper
+            .BuildJsonReader(c => c
+                .FromAssemblyOfType<ResourceHelperTests>()
+                .ConfigureJsonDeserializerOptions(c => c.PropertyNameCaseInsensitive = true)
+            )
+            .ReadJsonResource<IDictionary<string, string>>(c => c
+                .MatchingResourceEndsWith("Dictionary.json"))
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string>
+            {
+                { "Name", "Als2" },
+                { "Age",  "13" }
             });
     }
 
