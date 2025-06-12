@@ -5,7 +5,7 @@ Sometimes we may have a class that needs custom serialization settings e.g. the 
 !!! note
     The resource used in this example can be found [here](https://github.com/alunacjones/LSL.Resources.DotNetFiddle/blob/master/src/LSL.Resources.DotNetFiddle/Resources/LSL.Resources.DotNetFiddle.JsonTestClassWithEnum.json){ target="_blank" }
 
-```csharp  { data-fiddle="5nKf2v" }
+```csharp  { data-fiddle="1m7KG3" }
 var theObject = ResourceHelper
     .ReadJsonResource<JsonTestClassWithEnum>(c => c
         .ConfigureJsonDeserializerOptions(
