@@ -160,7 +160,7 @@ public static class ResourceHelper
     internal static string ToFileName(this string source)
     {
         var parts = source.Split('.');
-        var pathParts = string.Join(Path.PathSeparator, parts.Reverse().Skip(2));
+        var pathParts = string.Join(Path.DirectorySeparatorChar, parts.Reverse().Skip(2).Reverse());
 
         return Path.Combine(pathParts, string.Join('.', parts.Reverse().Take(2).Reverse()));
     }

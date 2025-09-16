@@ -269,8 +269,8 @@ public class ResourceHelperTests
     public async Task GivenRequestToOutputToAFolder_ItShouldProduceTheExpectedFolderStructure()
     {
         // Arrange
-        var tempFolder = new TemporaryFolderFactory().Create();
-        var currentDirectory = new DisposableCurrentDirectory.DisposableCurrentDirectory(tempFolder.FullPath);
+        using var tempFolder = new TemporaryFolderFactory().Create();
+        using var currentDirectory = new DisposableCurrentDirectory.DisposableCurrentDirectory(tempFolder.FullPath);
 
         // Act
         await typeof(ResourceHelperTests).Assembly.OutputResourcesToFileSystem("OutputResources", currentDirectory.CurrentDirectory);
@@ -298,6 +298,9 @@ public class ResourceHelperTests
 
         var innerPath = new DirectoryInfo(directories.Single());
         innerPath.Name.Should().Be("Inner");
+        var innerDirectories = Directory.GetDirectories(innerPath.FullName);
+        innerDirectories.Should().HaveCount(1);
+        var otherDirectory = innerDirectories.Single();
 
         var innerFiles = Directory.GetFiles(innerPath.FullName);
         innerFiles.Should().HaveCount(1);
@@ -310,6 +313,20 @@ public class ResourceHelperTests
                 """
                 {
                     "Other": "test"
+                }
+                """
+            ));
+
+        var otherDirectoryFiles = Directory.GetFiles(otherDirectory);
+        otherDirectoryFiles.Should().HaveCount(1);
+        var otherFile = otherDirectoryFiles.Single();
+        Path.GetFileName(otherFile).Should().Be("other.json");
+        JsonConvert.DeserializeObject(await File.ReadAllTextAsync(otherFile))
+            .Should()
+            .BeEquivalentTo(JsonConvert.DeserializeObject(
+                """
+                {
+                    "stuff": "here"
                 }
                 """
             ));        
