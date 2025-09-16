@@ -18,5 +18,4 @@ public static class JsonResourceReaderExtensions
     public static T ReadJsonResource<T>(this IJsonResourceReader jsonResourceReader, Action<JsonResourceReaderSettings> configurator = null) =>
         (T)jsonResourceReader.AssertNotNull(nameof(jsonResourceReader))
             .ReadJsonResource(typeof(T), configurator);
-
 }

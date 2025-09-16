@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using LSL.Resources.Infrastructure;
 
 namespace LSL.Resources;
@@ -54,6 +56,36 @@ public static class ResourceHelper
         using var reader = new StreamReader(stream);
 
         return reader.ReadToEnd();
+    }
+
+    /// <summary>
+    /// Outputs all resource files from the target <paramref name="assembly"/> whose path matches <paramref name="partialResourcePath"/>,
+    /// to the given <paramref name="outputPath"/>
+    /// </summary>
+    /// <param name="assembly"></param>
+    /// <param name="partialResourcePath"></param>
+    /// <param name="outputPath"></param>
+    /// <returns></returns>
+    public static async Task OutputResourcesToFileSystem(this Assembly assembly, string partialResourcePath, string outputPath)
+    {
+        var files = assembly
+            .GetManifestResourceNames()
+            .Where(s => s.Contains(partialResourcePath));
+
+        var resourcePrefixRegex = new Regex(@$".*{Regex.Escape(partialResourcePath)}\.");
+
+        foreach (var file in files)
+        {
+            using var stream = assembly.GetManifestResourceStream(file)!;
+            using var reader = new StreamReader(stream);
+
+            var actualFileName = resourcePrefixRegex.Replace(file, string.Empty).ToFileName();
+            var fullPath = Path.Combine(outputPath, actualFileName);
+            Directory.CreateDirectory(Directory.GetParent(actualFileName).FullName);
+
+            await File.WriteAllTextAsync(fullPath, await reader.ReadToEndAsync());
+        }
+
     }
 
     /// <summary>
@@ -123,5 +155,13 @@ public static class ResourceHelper
             "It looks like you haven't setup an Assembly via the FromAssembly or FromAssemblyOfType methods of your configurator");
 
         return settings;
+    }
+
+    internal static string ToFileName(this string source)
+    {
+        var parts = source.Split('.');
+        var pathParts = string.Join(Path.PathSeparator, parts.Reverse().Skip(2));
+
+        return Path.Combine(pathParts, string.Join('.', parts.Reverse().Take(2).Reverse()));
     }
 }

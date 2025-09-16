@@ -1,10 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using Diamond.Core.System.TemporaryFolder;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using LSL.Resources.DotNetFiddle;
+using Newtonsoft.Json;
 
 namespace LSL.Resources.Tests;
 
@@ -257,6 +264,57 @@ public class ResourceHelperTests
                 Name = "Tally Ho"
             });
     }
+
+    [Test]
+    public async Task GivenRequestToOutputToAFolder_ItShouldProduceTheExpectedFolderStructure()
+    {
+        // Arrange
+        var tempFolder = new TemporaryFolderFactory().Create();
+        var currentDirectory = new DisposableCurrentDirectory.DisposableCurrentDirectory(tempFolder.FullPath);
+
+        // Act
+        await typeof(ResourceHelperTests).Assembly.OutputResourcesToFileSystem("OutputResources", currentDirectory.CurrentDirectory);
+
+        // Assert
+        using var assertionScope = new AssertionScope();
+
+        var files = Directory.GetFiles(currentDirectory.CurrentDirectory);
+
+        files.Length.Should().Be(1);
+        var file = files.Single();
+        Path.GetFileName(file).Should().Be("test.json");
+        JsonConvert.DeserializeObject(await File.ReadAllTextAsync(file))
+            .Should()
+            .BeEquivalentTo(JsonConvert.DeserializeObject(
+                """
+                {
+                    "TopLevel": "test"
+                }
+                """
+            ));
+
+        var directories = Directory.GetDirectories(currentDirectory.CurrentDirectory);
+        directories.Length.Should().Be(1);
+
+        var innerPath = new DirectoryInfo(directories.Single());
+        innerPath.Name.Should().Be("Inner");
+
+        var innerFiles = Directory.GetFiles(innerPath.FullName);
+        innerFiles.Should().HaveCount(1);
+
+        var innerFile = innerFiles.Single();
+        Path.GetFileName(innerFile).Should().Be("test.json");
+        JsonConvert.DeserializeObject(await File.ReadAllTextAsync(innerFile))
+            .Should()
+            .BeEquivalentTo(JsonConvert.DeserializeObject(
+                """
+                {
+                    "Other": "test"
+                }
+                """
+            ));        
+    }
+
     internal class MyTestClass
     {
         public string Name { get; set; }
