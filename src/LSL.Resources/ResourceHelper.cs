@@ -76,16 +76,16 @@ public static class ResourceHelper
 
         foreach (var file in files)
         {
-            using var stream = assembly.GetManifestResourceStream(file)!;
-            using var reader = new StreamReader(stream);
-
             var actualFileName = resourcePrefixRegex.Replace(file, string.Empty).ToFileName();
             var fullPath = Path.Combine(outputPath, actualFileName);
+
             Directory.CreateDirectory(Directory.GetParent(fullPath).FullName);
 
-            await File.WriteAllTextAsync(fullPath, await reader.ReadToEndAsync());
-        }
+            using var stream = assembly.GetManifestResourceStream(file)!;
+            using var outputStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write);            
 
+            await stream.CopyToAsync(outputStream);
+        }
     }
 
     /// <summary>
