@@ -141,7 +141,11 @@ public static class ResourceHelper
                 ? $".{settings.ResourceNamePrefix}"
                 : $".{settings.ResourceNamePrefix}.";
 
-        return JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{prefix}{name}"), type, options);
+        using var stream = GetResourceStream(settings.Assembly, $"{prefix}{name}");
+
+        return settings.CustomDeserialiser is null
+            ? JsonSerializer.Deserialize(GetResourceStream(settings.Assembly, $"{prefix}{name}"), type, options)
+            : settings.CustomDeserialiser(stream, type);
     }
 
     internal static ReadJsonResourceSettings InitialiseJsonSettings(Action<ReadJsonResourceSettings> configurator, Action<ReadJsonResourceSettings> preConfigurator)

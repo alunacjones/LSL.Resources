@@ -4,14 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Diamond.Core.System.TemporaryFolder;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using LSL.Resources.DotNetFiddle;
-using Newtonsoft.Json;
+using NJ = Newtonsoft.Json;
 
 namespace LSL.Resources.Tests;
 
@@ -100,6 +99,28 @@ public class ResourceHelperTests
             .ReadJsonResource<JsonTestClass>(c => c
                 .FromAssemblyOfType<ResourceHelperTests>()
                 .WithResourceNamePrefixOf("SubFolder")
+            )
+            .Should()
+            .BeEquivalentTo(new JsonTestClass
+            {
+                Name = "Als3",
+                Age = -21
+            });
+    }
+
+    [Test]
+    public void ReadJsonResourcePrefixOverrideAndCustomDeserialiser_GivenAValidResource_ItShouldReturnTheExpectedResult()
+    {
+        ResourceHelper
+            .ReadJsonResource<JsonTestClass>(c => c
+                .FromAssemblyOfType<ResourceHelperTests>()
+                .WithResourceNamePrefixOf("SubFolder")
+                .WithCustomDeserialiser((stream, type) => { 
+                    var serialiser = new NJ.JsonSerializer();
+                    using var reader = new StreamReader(stream);
+
+                    return serialiser.Deserialize(reader, type);
+                })
             )
             .Should()
             .BeEquivalentTo(new JsonTestClass
@@ -283,9 +304,9 @@ public class ResourceHelperTests
         files.Length.Should().Be(1);
         var file = files.Single();
         Path.GetFileName(file).Should().Be("test.json");
-        JsonConvert.DeserializeObject(await File.ReadAllTextAsync(file))
+        NJ.JsonConvert.DeserializeObject(await File.ReadAllTextAsync(file))
             .Should()
-            .BeEquivalentTo(JsonConvert.DeserializeObject(
+            .BeEquivalentTo(NJ.JsonConvert.DeserializeObject(
                 """
                 {
                     "TopLevel": "test"
@@ -307,9 +328,9 @@ public class ResourceHelperTests
 
         var innerFile = innerFiles.Single();
         Path.GetFileName(innerFile).Should().Be("test.json");
-        JsonConvert.DeserializeObject(await File.ReadAllTextAsync(innerFile))
+        NJ.JsonConvert.DeserializeObject(await File.ReadAllTextAsync(innerFile))
             .Should()
-            .BeEquivalentTo(JsonConvert.DeserializeObject(
+            .BeEquivalentTo(NJ.JsonConvert.DeserializeObject(
                 """
                 {
                     "Other": "test"
@@ -321,9 +342,9 @@ public class ResourceHelperTests
         otherDirectoryFiles.Should().HaveCount(1);
         var otherFile = otherDirectoryFiles.Single();
         Path.GetFileName(otherFile).Should().Be("other.json");
-        JsonConvert.DeserializeObject(await File.ReadAllTextAsync(otherFile))
+        NJ.JsonConvert.DeserializeObject(await File.ReadAllTextAsync(otherFile))
             .Should()
-            .BeEquivalentTo(JsonConvert.DeserializeObject(
+            .BeEquivalentTo(NJ.JsonConvert.DeserializeObject(
                 """
                 {
                     "stuff": "here"

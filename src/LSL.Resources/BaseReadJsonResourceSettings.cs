@@ -1,4 +1,5 @@
-using System.IO.Pipes;
+using System;
+using System.IO;
 using LSL.Resources.Infrastructure;
 
 namespace LSL.Resources;
@@ -12,6 +13,7 @@ public abstract class BaseReadJsonResourceSettings<TSelf> : BaseSettings<TSelf>,
 {
     internal string ResourceNamePrefix { get; private set; }
     internal string ResourceNameEndsWith { get; private set; }
+    internal Func<Stream, Type, object> CustomDeserialiser  { get; private set; }
 
     string IBaseReadJsonResourceSettings.ResourceNameEndsWith => ResourceNameEndsWith;
 
@@ -40,6 +42,17 @@ public abstract class BaseReadJsonResourceSettings<TSelf> : BaseSettings<TSelf>,
     public TSelf WithResourceNamePrefixOf(string resourceNamePrefix)
     {
         ResourceNamePrefix = resourceNamePrefix.AssertNotNull(nameof(resourceNamePrefix));
+        return Self;
+    }
+
+    /// <summary>
+    /// Use a custom deserialiser
+    /// </summary>
+    /// <param name="customDeserialiser"></param>
+    /// <returns></returns>
+    public TSelf WithCustomDeserialiser(Func<Stream, Type, object> customDeserialiser)
+    {
+        CustomDeserialiser = customDeserialiser.AssertNotNull(nameof(customDeserialiser));
         return Self;
     }
 }
